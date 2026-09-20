@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoundForge Studios — Календарь Бронирования</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            studio: {
+              900: '#0B0D14',
+              850: '#111420',
+              800: '#161B2E',
+              700: '#232A44',
+              accent: '#8B5CF6',
+              amber: '#F59E0B',
+              emerald: '#10B981',
+              rose: '#F43F5E'
+            }
+          },
+          boxShadow: {
+            'glow-purple': '0 0 25px -5px rgba(139, 92, 246, 0.4)',
+            'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #07090E;
+      color: #E2E8F0;
+      overflow-x: hidden;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272F4D;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8B5CF6;
+    }
+    .custom-gradient-border {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.1), transparent 60%);
+      padding: 1px;
+    }
+    .glass-panel {
+      background: rgba(17, 20, 32, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .vumeter-led {
+      animation: pulseVibe 2s infinite ease-in-out;
+    }
+    @keyframes pulseVibe {
+      0%, 100% { opacity: 0.7; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.3); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#07090E] text-slate-200">
+
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 glass-panel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-glow-purple">
+          <i data-lucide="disc-3" class="w-6 h-6 text-white animate-spin" style="animation-duration: 10s;"></i>
+        </div>
+        <div>
+          <span class="font-extrabold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
+            SOUNDFORGE <span class="text-xs uppercase px-2 py-0.5 rounded-full bg-purple-900/60 text-purple-300 border border-purple-500/30">Studios</span>
+          </span>
+          <p class="text-[11px] text-slate-400 font-medium tracking-wide">Audio Production & Recording Hub</p>
+        </div>
+      </div>
+
+      <!-- Studio Status & Action -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          ON AIR / Студия открыта 10:00 - 23:00
+        </div>
+        <button onclick="toggleModal('my-bookings-modal', true)" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700/60 transition shadow-sm">
+          <i data-lucide="list-music" class="w-4 h-4 text-purple-400"></i>
+          <span>Мои брони</span>
+          <span id="bookings-count-badge" class="ml-1 px-1.5 py-0.2 rounded-full bg-purple-600 text-[10px] text-white font-bold">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    
+    <!-- Hero Banner with Studio Stats -->
+    <div class="relative rounded-2xl overflow-hidden border border-purple-900/40 bg-gradient-to-r from-purple-950/40 via-studio-850 to-studio-900 p-5 sm:p-7">
+      <div class="absolute -right-16 -top-16 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase text-purple-400 mb-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            Онлайн бронирование времени
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Забронируйте студийную сессию</h1>
+          <p class="text-sm text-slate-400 mt-1 max-w-xl">
+            Выберите зал, звукорежиссёра, дату и удобные слоты. Акустически выверенные помещения с аналоговыми преампами Neve, SSL и микрофонами Neumann.
+          </p>
+        </div>
+        <!-- Live Audio VU meter aesthetic element -->
+        <div class="flex items-end gap-1.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800 self-start md:self-auto">
+          <div class="flex items-center gap-1 text-[11px] text-slate-400 mr-2 font-mono">
+            <i data-lucide="mic-2" class="w-3.5 h-3.5 text-purple-400"></i> MONITOR
+          </div>
+          <div class="w-1.5 h-6 bg-emerald-500 rounded-sm vumeter-led"></div>
+          <div class="w-1.5 h-9 bg-emerald-400 rounded-sm vumeter-led" style="animation-delay: 0.2s"></div>
+          <div class="w-1.5 h-5 bg-yellow-400 rounded-sm vumeter-led" style="animation-delay: 0.4s"></div>
+          <div class="w-1.5 h-11 bg-yellow-500 rounded-sm vumeter-led" style="animation-delay: 0.1s"></div>
+          <div class="w-1.5 h-4 bg-rose-500 rounded-sm vumeter-led" style="animation-delay: 0.3s"></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 border border-purple-500/30 flex items-center justify-center text-xs font-mono">1</span>
+          Выберите студийный зал
+        </h2>
+        <span class="text-xs text-slate-400 hidden sm:inline">Все залы оснащены кондиционированием и приточной вентиляцией</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="rooms-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 border border-purple-500/30 flex items-center justify-center text-xs font-mono">2</span>
+        Звукорежиссер / Инженер
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="engineers-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 border border-purple-500/30 flex items-center justify-center text-xs font-mono">3</span>
+          Дата и свободные тайм-слоты
+        </h2>
+        <div class="flex items-center gap-4 text-xs font-medium">
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-800 border border-slate-700"></span> Свободно</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-purple-600 shadow-glow-purple"></span> Выбрано</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-950/70 border border-rose-900/60 opacity-60"></span> Занято</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Month Calendar Widget -->
+        <div class="lg:col-span-5 bg-studio-850 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span id="calendar-month-year" class="text-base font-bold text-white capitalize">Сентябрь 2026</span>
+              <div class="flex items-center gap-1">
+                <button id="prev-month-btn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                <button id="today-btn" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-400 transition">
+                  Сегодня
+                </button>
+                <button id="next-month-btn" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Day names -->
+            <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2">
+              <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span class="text-purple-400">Сб</span><span class="text-purple-400">Вс</span>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div id="calendar-days" class="grid grid-cols-7 gap-1 text-sm">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Quick Date Info Box -->
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+            <span class="text-slate-400">Выбранный день:</span>
+            <span id="selected-date-label" class="font-bold text-purple-300 bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-800/40">
+              --
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Time Slots Matrix for the Selected Date -->
+        <div class="lg:col-span-7 bg-studio-850 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-bold text-white text-base">Доступные часы</h3>
+                <p class="text-xs text-slate-400">Кликните по одному или нескольким слотам для бронирования</p>
+              </div>
+              <span id="selected-slots-counter" class="text-xs bg-slate-800 text-purple-300 font-semibold px-2.5 py-1 rounded-full border border-slate-700">
+                Выбрано: 0 ч
+              </span>
+            </div>
+
+            <!-- Slots Grid -->
+            <div id="time-slots-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 my-3 max-h-[310px] overflow-y-auto pr-1">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Live Price Banner inside slot container -->
+          <div class="mt-4 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-slate-400">Текущий расчёт:</div>
+              <div class="text-xl font-extrabold text-white flex items-baseline gap-1">
+                <span id="live-total-price">0</span> ₽
+                <span class="text-xs text-slate-400 font-normal" id="rate-summary-text">(0 ч × 0 ₽)</span>
+              </div>
+            </div>
+
+            <button id="book-now-btn" disabled class="w-full sm:w-auto px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-white text-sm shadow-glow-purple flex items-center justify-center gap-2 transition duration-200">
+              <i data-lucide="calendar-check" class="w-4 h-4"></i>
+              <span>Перейти к оформлению</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="booking-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+      <div class="relative bg-studio-850 border border-slate-700/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[92vh]">
+        <!-- Close Button -->
+        <button onclick="toggleModal('booking-modal', false)" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800/80">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300">
+            <i data-lucide="sliders" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Детали бронирования сессии</h3>
+            <p class="text-xs text-slate-400">Проверьте данные и укажите контактную информацию</p>
+          </div>
+        </div>
+
+        <!-- Session Summary Card -->
+        <div class="bg-studio-900/90 border border-slate-800 rounded-xl p-4 mb-5 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Помещение:</span>
+            <span id="modal-room-name" class="font-semibold text-white">--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Звукорежиссер:</span>
+            <span id="modal-eng-name" class="font-semibold text-white">--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Дата и время:</span>
+            <span id="modal-datetime-range" class="font-semibold text-purple-300">--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Длительность:</span>
+            <span id="modal-duration" class="font-semibold text-white">--</span>
+          </div>
+        </div>
+
+        <!-- Form fields -->
+        <form id="booking-form" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Имя исполнителя или группы *</label>
+            <input type="text" id="client-name" required placeholder="Например: Иван Иванов или группа 'Echo'" 
+              class="w-full bg-studio-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Телефон *</label>
+              <input type="tel" id="client-phone" required placeholder="+7 (999) 000-00-00" 
+                class="w-full bg-studio-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Telegram / Никнейм</label>
+              <input type="text" id="client-tg" placeholder="@username" 
+                class="w-full bg-studio-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Формат сессии</label>
+            <select id="session-type" class="w-full bg-studio-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500">
+              <option value="vocal">Запись вокала / дикторский текст</option>
+              <option value="instruments">Запись живых инструментов / ударных</option>
+              <option value="mix-master">Сведение и мастеринг с инженером</option>
+              <option value="rehearsal">Репетиция бэнда</option>
+              <option value="podcast">Запись подкаста / видеоинтервью</option>
+            </select>
+          </div>
+
+          <!-- Addon Options -->
+          <div class="space-y-2 pt-1">
+            <span class="block text-xs font-semibold text-slate-300">Дополнительные опции:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-studio-900 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                <input type="checkbox" id="addon-video" onchange="calculatePrices()" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500">
+                <span class="text-xs text-slate-300">Видеозапись сессии (+1,500 ₽)</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-studio-900 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                <input type="checkbox" id="addon-coffee" onchange="calculatePrices()" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500">
+                <span class="text-xs text-slate-300">Чай / Зерновой кофе (+400 ₽)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Total Calculation in Modal -->
+          <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-sm font-semibold text-slate-300">Итоговая стоимость:</span>
+            <span id="modal-final-cost" class="text-2xl font-black text-purple-400">0 ₽</span>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="toggleModal('booking-modal', false)" class="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-slate-300 text-sm transition">
+              Отмена
+            </button>
+            <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 font-bold text-white text-sm shadow-glow-purple transition">
+              Подтвердить бронь
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="my-bookings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+      <div class="relative bg-studio-850 border border-slate-700/80 rounded-2xl max-w-2xl w-full p-6 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-600/30 flex items-center justify-center text-purple-400">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Список забронированных сессий</h3>
+              <p class="text-xs text-slate-400">Сохранены в памяти вашего браузера (LocalStorage)</p>
+            </div>
+          </div>
+          <button onclick="toggleModal('my-bookings-modal', false)" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="py-3 flex items-center gap-2 overflow-x-auto">
+          <span class="text-xs text-slate-400 font-medium whitespace-nowrap">Фильтр:</span>
+          <button onclick="filterBookings('all')" id="filter-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white transition">Все</button>
+          <button onclick="filterBookings('room-a')" id="filter-room-a" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Control Room</button>
+          <button onclick="filterBookings('room-b')" id="filter-room-b" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Live Room</button>
+          <button onclick="filterBookings('booth')" id="filter-booth" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Vocal Booth</button>
+          <button onclick="filterBookings('mastering')" id="filter-mastering" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Mastering</button>
+        </div>
+
+        <!-- Booking items list -->
+        <div id="bookings-list-container" class="flex-grow overflow-y-auto space-y-3 pr-1 my-2">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+          <span>Нажмите кнопку «Отменить», чтобы освободить тайм-слот в расписании.</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-studio-900 py-6 mt-12 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <i data-lucide="radio" class="w-4 h-4 text-purple-400"></i>
+        <span>SoundForge Recording Studio &middot; High-End Gear & Acoustic Precision</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-400">
+        <span>Телефон: +7 (495) 789-01-22</span>
+        <span>Телеграм: @soundforge_studio</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Data definition for rooms
+    const ROOMS = [
+      {
+        id: 'room-a',
+        name: 'Control Room A',
+        tag: 'Флагманский зал',
+        pricePerHour: 2500,
+        equipment: 'Консоль SSL 4000E, мониторы Genelec 8351B, микрофоны Neumann U87 Ai',
+        idealFor: 'Запись вокала, сведение, продакшн',
+        colorClass: 'border-purple-500/80',
+        badgeColor: 'bg-purple-950 text-purple-300 border-purple-800'
+      },
+      {
+        id: 'room-b',
+        name: 'Live Room B',
+        tag: 'Большой тон-зал (65м²)',
+        pricePerHour: 2200,
+        equipment: 'Ударная установка DW Collector, усилители Marshall JCM800 & Ampeg SVT',
+        idealFor: 'Запись барабанов, бэндов, струнных',
+        colorClass: 'border-amber-500/80',
+        badgeColor: 'bg-amber-950 text-amber-300 border-amber-800'
+      },
+      {
+        id: 'booth',
+        name: 'Vocal Booth',
+        tag: 'Глухая дикторская',
+        pricePerHour: 1400,
+        equipment: 'Sony C-800G, Shure SM7B, преамп Avalon Vt-737sp, звукоизоляция 48dB',
+        idealFor: 'Озвучка, дикторы, подкасты, соло-вокал',
+        colorClass: 'border-emerald-500/80',
+        badgeColor: 'bg-emerald-950 text-emerald-300 border-emerald-800'
+      },
+      {
+        id: 'mastering',
+        name: 'Mastering Room',
+        tag: 'Прецизионный контроль',
+        pricePerHour: 2000,
+        equipment: 'ATC SCM110A Pro, компрессоры Shadow Hills, эквалайзеры Manley Massive Passive',
+        idealFor: 'Финальный мастеринг, реставрация аудио',
+        colorClass: 'border-blue-500/80',
+        badgeColor: 'bg-blue-950 text-blue-300 border-blue-800'
+      }
+    ];
+
+    // Data definition for sound engineers
+    const ENGINEERS = [
+      {
+        id: 'none',
+        name: 'Без звукорежиссера',
+        desc: 'Только аренда зала (необходим опыт работы со студийным трактом)',
+        extraCost: 0,
+        icon: 'sliders-horizontal'
+      },
+      {
+        id: 'alex',
+        name: 'Алексей Мельников',
+        desc: 'Senior Sound Engineer: Hip-Hop, Pop, Electronic (12 лет опыта)',
+        extraCost: 1200,
+        icon: 'headphones'
+      },
+      {
+        id: 'dmitry',
+        name: 'Дмитрий Романов',
+        desc: 'Live & Rock Producer: запись живых барабанов, гитар и микширование',
+        extraCost: 1500,
+        icon: 'volume-2'
+      },
+      {
+        id: 'elena',
+        name: 'Елена Воронова',
+        desc: 'Дикторский и вокальный коуч, чистка таймингов, тюнинг Melodyne',
+        extraCost: 1000,
+        icon: 'mic'
+      }
+    ];
+
+    // Hours definition (10:00 to 22:00)
+    const TIME_SLOTS = [
+      '10:00 - 11:00',
+      '11:00 - 12:00',
+      '12:00 - 13:00',
+      '13:00 - 14:00',
+      '14:00 - 15:00',
+      '15:00 - 16:00',
+      '16:00 - 17:00',
+      '17:00 - 18:00',
+      '18:00 - 19:00',
+      '19:00 - 20:00',
+      '20:00 - 21:00',
+      '21:00 - 22:00'
+    ];
+
+    // App State
+    let selectedRoomId = 'room-a';
+    let selectedEngineerId = 'alex';
+    let currentDate = new Date();
+    // Use ISO YYYY-MM-DD for selected date
+    let selectedDateStr = formatDateKey(new Date());
+    let selectedSlots = []; // Array of slot strings
+    let activeFilter = 'all';
+
+    // LocalStorage helper for bookings
+    const STORAGE_KEY = 'soundforge_studio_bookings_v1';
+
+    function getStoredBookings() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : getSeedBookings();
+      } catch (e) {
+        return getSeedBookings();
+      }
+    }
+
+    function saveStoredBookings(bookings) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+      } catch (e) {
+        console.error('Could not save to localStorage', e);
+      }
+      updateBookingsBadge();
+    }
+
+    // Default sample bookings so the calendar shows real busy slots
+    function getSeedBookings() {
+      const todayStr = formatDateKey(new Date());
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = formatDateKey(tomorrow);
+
+      const seeds = [
+        {
+          id: 'mock-1',
+          roomId: 'room-a',
+          date: todayStr,
+          slots: ['14:00 - 15:00', '15:00 - 16:00'],
+          engineerId: 'alex',
+          clientName: 'Max Fadeev Team',
+          phone: '+7 999 111-22-33',
+          telegram: '@fadeev_prod',
+          sessionType: 'Запись вокала',
+          totalCost: 7400,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'mock-2',
+          roomId: 'room-b',
+          date: todayStr,
+          slots: ['18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00'],
+          engineerId: 'dmitry',
+          clientName: 'Рок-группа СЕВЕР',
+          phone: '+7 903 555-44-11',
+          telegram: '@sever_band',
+          sessionType: 'Запись барабанов',
+          totalCost: 11100,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'mock-3',
+          roomId: 'booth',
+          date: tomorrowStr,
+          slots: ['11:00 - 12:00', '12:00 - 13:00'],
+          engineerId: 'elena',
+          clientName: 'Аудиокнига "Нейросети"',
+          phone: '+7 925 333-88-77',
+          telegram: '@litres_speaker',
+          sessionType: 'Озвучка',
+          totalCost: 4800,
+          createdAt: new Date().toISOString()
+        }
+      ];
+      return seeds;
+    }
+
+    // Date formatting helper
+    function formatDateKey(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDisplayDate(dateStr) {
+      const parts = dateStr.split('-');
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return d.toLocaleDateString('ru-RU', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+
+    function renderRooms() {
+      const container = document.getElementById('rooms-container');
+      container.innerHTML = '';
+
+      ROOMS.forEach(room => {
+        const isSelected = room.id === selectedRoomId;
+        const card = document.createElement('div');
+        card.className = `cursor-pointer transition-all duration-200 rounded-xl p-4 border text-left flex flex-col justify-between ${
+          isSelected 
+            ? `bg-studio-800 border-purple-500 shadow-glow-purple ring-1 ring-purple-500` 
+            : `bg-studio-850 border-slate-800 hover:border-slate-700 hover:bg-studio-800/80`
+        }`;
+
+        card.onclick = () => {
+          selectedRoomId = room.id;
+          selectedSlots = []; // Reset selected slots when switching room
+          renderRooms();
+          renderTimeSlots();
+          calculatePrices();
+        };
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${room.badgeColor}">
+                ${room.tag}
+              </span>
+              <div class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-purple-400 bg-purple-600' : 'border-slate-600'}">
+                ${isSelected ? '<i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>' : ''}
+              </div>
+            </div>
+            <h3 class="font-bold text-base text-white">${room.name}</h3>
+            <p class="text-xs text-purple-300 font-medium mt-0.5">${room.idealFor}</p>
+            <p class="text-[11px] text-slate-400 mt-2 line-clamp-2 leading-relaxed">${room.equipment}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-baseline justify-between">
+            <span class="text-xs text-slate-400">Тариф:</span>
+            <span class="text-sm font-extrabold text-white">${room.pricePerHour.toLocaleString()} <span class="text-xs font-normal text-slate-400">₽/час</span></span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderEngineers() {
+      const container = document.getElementById('engineers-container');
+      container.innerHTML = '';
+
+      ENGINEERS.forEach(eng => {
+        const isSelected = eng.id === selectedEngineerId;
+        const card = document.createElement('div');
+        card.className = `cursor-pointer transition-all duration-200 rounded-xl p-3.5 border flex items-center gap-3 ${
+          isSelected 
+            ? `bg-studio-800 border-purple-500 ring-1 ring-purple-500/80` 
+            : `bg-studio-850 border-slate-800 hover:border-slate-700 hover:bg-studio-800/70`
+        }`;
+
+        card.onclick = () => {
+          selectedEngineerId = eng.id;
+          renderEngineers();
+          calculatePrices();
+        };
+
+        const costText = eng.extraCost === 0 ? 'Без доплаты' : `+${eng.extraCost.toLocaleString()} ₽/ч`;
+
+        card.innerHTML = `
+          <div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center ${isSelected ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'}">
+            <i data-lucide="${eng.icon}" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-grow min-w-0">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-xs sm:text-sm text-white truncate">${eng.name}</h4>
+              <span class="text-[11px] font-semibold ${eng.extraCost > 0 ? 'text-purple-300' : 'text-slate-400'} whitespace-nowrap">${costText}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate mt-0.5">${eng.desc}</p>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      // Set month title
+      const monthNames = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+      ];
+      document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+      document.getElementById('selected-date-label').textContent = formatDisplayDate(selectedDateStr);
+
+      const daysContainer = document.getElementById('calendar-days');
+      daysContainer.innerHTML = '';
+
+      // First day of month (0 = Sun, 1 = Mon ... need 1=Mon, 7=Sun)
+      const firstDayOfMonth = new Date(year, month, 1).getDay();
+      const startingDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; 
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+
+      // Today helper
+      const realToday = new Date();
+      const realTodayStr = formatDateKey(realToday);
+
+      // Previous month placeholder days
+      for (let i = startingDay - 1; i >= 0; i--) {
+        const dayNum = prevMonthDays - i;
+        const cell = document.createElement('div');
+        cell.className = 'h-9 sm:h-10 flex items-center justify-center text-slate-600 text-xs rounded-lg select-none';
+        cell.textContent = dayNum;
+        daysContainer.appendChild(cell);
+      }
+
+      // Current month days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cellDate = new Date(year, month, day);
+        const cellDateStr = formatDateKey(cellDate);
+        const isPast = cellDateStr < realTodayStr;
+        const isToday = cellDateStr === realTodayStr;
+        const isSelected = cellDateStr === selectedDateStr;
+
+        const cell = document.createElement('button');
+        cell.disabled = isPast;
+
+        let baseStyle = 'h-9 sm:h-10 flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition relative ';
+
+        if (isSelected) {
+          baseStyle += 'bg-purple-600 text-white shadow-glow-purple font-bold ';
+        } else if (isPast) {
+          baseStyle += 'text-slate-600 opacity-40 cursor-not-allowed ';
+        } else if (isToday) {
+          baseStyle += 'bg-slate-800 text-purple-400 border border-purple-500/40 hover:bg-slate-700 ';
+        } else {
+          baseStyle += 'text-slate-300 hover:bg-slate-800 hover:text-white ';
+        }
+
+        cell.className = baseStyle;
+        cell.innerHTML = `<span>${day}</span>`;
+
+        // Check if there are bookings on this date for the selected room
+        const stored = getStoredBookings();
+        const hasBookings = stored.some(b => b.date === cellDateStr && b.roomId === selectedRoomId);
+        if (hasBookings && !isSelected && !isPast) {
+          const dot = document.createElement('span');
+          dot.className = 'w-1 h-1 rounded-full bg-amber-400 absolute bottom-1';
+          cell.appendChild(dot);
+        }
+
+        cell.onclick = () => {
+          if (isPast) return;
+          selectedDateStr = cellDateStr;
+          selectedSlots = []; // Reset slot selection on date change
+          renderCalendar();
+          renderTimeSlots();
+          calculatePrices();
+        };
+
+        daysContainer.appendChild(cell);
+      }
+    }
+
+    function renderTimeSlots() {
+      const grid = document.getElementById('time-slots-grid');
+      grid.innerHTML = '';
+
+      const bookings = getStoredBookings();
+      // Find all occupied slots for current room & selected date
+      const occupiedSlots = new Set();
+      bookings.forEach(b => {
+        if (b.roomId === selectedRoomId && b.date === selectedDateStr) {
+          b.slots.forEach(s => occupiedSlots.add(s));
+        }
+      });
+
+      TIME_SLOTS.forEach(slot => {
+        const isOccupied = occupiedSlots.has(slot);
+        const isSelected = selectedSlots.includes(slot);
+
+        const slotBtn = document.createElement('button');
+        slotBtn.disabled = isOccupied;
+
+        let slotClass = 'p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all ';
+
+        if (isOccupied) {
+          slotClass += 'bg-rose-950/20 border-rose-900/40 text-rose-300/50 cursor-not-allowed line-through';
+        } else if (isSelected) {
+          slotClass += 'bg-purple-600 text-white border-purple-400 shadow-glow-purple font-bold';
+        } else {
+          slotClass += 'bg-studio-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800';
+        }
+
+        slotBtn.className = slotClass;
+
+        let statusText = isOccupied ? 'Занято' : (isSelected ? 'Выбрано' : 'Свободно');
+        let iconName = isOccupied ? 'lock' : (isSelected ? 'check' : 'clock');
+
+        slotBtn.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="${iconName}" class="w-3.5 h-3.5 ${isSelected ? 'text-white' : (isOccupied ? 'text-rose-500' : 'text-slate-400')}"></i>
+            <span>${slot}</span>
+          </div>
+          <span class="text-[10px] uppercase font-semibold ${isSelected ? 'text-purple-200' : (isOccupied ? 'text-rose-400' : 'text-slate-400')}">${statusText}</span>
+        `;
+
+        slotBtn.onclick = () => {
+          if (isOccupied) return;
+          if (selectedSlots.includes(slot)) {
+            selectedSlots = selectedSlots.filter(s => s !== slot);
+          } else {
+            selectedSlots.push(slot);
+            // Keep slots logically sorted
+            selectedSlots.sort();
+          }
+          renderTimeSlots();
+          calculatePrices();
+        };
+
+        grid.appendChild(slotBtn);
+      });
+
+      document.getElementById('selected-slots-counter').textContent = `Выбрано: ${selectedSlots.length} ч`;
+      lucide.createIcons();
+    }
+
+    function calculatePrices() {
+      const room = ROOMS.find(r => r.id === selectedRoomId);
+      const eng = ENGINEERS.find(e => e.id === selectedEngineerId);
+      const hours = selectedSlots.length;
+
+      const hourlyRate = (room ? room.pricePerHour : 0) + (eng ? eng.extraCost : 0);
+      let total = hourlyRate * hours;
+
+      // Addons in modal
+      const videoAddon = document.getElementById('addon-video');
+      const coffeeAddon = document.getElementById('addon-coffee');
+      if (videoAddon && videoAddon.checked && hours > 0) total += 1500;
+      if (coffeeAddon && coffeeAddon.checked && hours > 0) total += 400;
+
+      // Update UI displays
+      document.getElementById('live-total-price').textContent = total.toLocaleString();
+      document.getElementById('rate-summary-text').textContent = `(${hours} ч × ${hourlyRate.toLocaleString()} ₽/ч)`;
+
+      // Modal price
+      const modalCost = document.getElementById('modal-final-cost');
+      if (modalCost) {
+        modalCost.textContent = `${total.toLocaleString()} ₽`;
+      }
+
+      // Activate or deactivate "Book now" button
+      const bookBtn = document.getElementById('book-now-btn');
+      bookBtn.disabled = hours === 0;
+    }
+
+    function toggleModal(modalId, show) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      if (show) {
+        modal.classList.remove('hidden');
+        if (modalId === 'booking-modal') {
+          populateModalDetails();
+        } else if (modalId === 'my-bookings-modal') {
+          renderBookingsList();
+        }
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function populateModalDetails() {
+      const room = ROOMS.find(r => r.id === selectedRoomId);
+      const eng = ENGINEERS.find(e => e.id === selectedEngineerId);
+
+      document.getElementById('modal-room-name').textContent = room ? room.name : '';
+      document.getElementById('modal-eng-name').textContent = eng ? eng.name : '';
+      document.getElementById('modal-datetime-range').textContent = `${formatDisplayDate(selectedDateStr)} (${selectedSlots.join(', ')})`;
+      document.getElementById('modal-duration').textContent = `${selectedSlots.length} ч (с ${selectedSlots[0]?.split(' - ')[0]} до ${selectedSlots[selectedSlots.length - 1]?.split(' - ')[1]})`;
+      calculatePrices();
+    }
+
+    // Form Submission for New Booking
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      if (selectedSlots.length === 0) {
+        showToast('Пожалуйста, выберите хотя бы один свободный слот', 'error');
+        return;
+      }
+
+      const clientName = document.getElementById('client-name').value.trim();
+      const clientPhone = document.getElementById('client-phone').value.trim();
+      const clientTg = document.getElementById('client-tg').value.trim();
+      const sessionType = document.getElementById('session-type').value;
+
+      const room = ROOMS.find(r => r.id === selectedRoomId);
+      const eng = ENGINEERS.find(e => e.id === selectedEngineerId);
+
+      const videoAddon = document.getElementById('addon-video').checked;
+      const coffeeAddon = document.getElementById('addon-coffee').checked;
+
+      const hourlyRate = room.pricePerHour + eng.extraCost;
+      let total = (hourlyRate * selectedSlots.length) + (videoAddon ? 1500 : 0) + (coffeeAddon ? 400 : 0);
+
+      const newBooking = {
+        id: 'rec-' + Date.now(),
+        roomId: selectedRoomId,
+        date: selectedDateStr,
+        slots: [...selectedSlots],
+        engineerId: selectedEngineerId,
+        clientName,
+        phone: clientPhone,
+        telegram: clientTg,
+        sessionType,
+        addons: { video: videoAddon, coffee: coffeeAddon },
+        totalCost: total,
+        createdAt: new Date().toISOString()
+      };
+
+      const stored = getStoredBookings();
+      stored.unshift(newBooking);
+      saveStoredBookings(stored);
+
+      // Reset modal and selection
+      toggleModal('booking-modal', false);
+      e.target.reset();
+      selectedSlots = [];
+
+      // Re-render
+      renderCalendar();
+      renderTimeSlots();
+      calculatePrices();
+
+      showToast('Бронирование успешно создано! Ждем вас в студии.', 'success');
+    }
+
+    function filterBookings(filter) {
+      activeFilter = filter;
+      const filterButtons = ['all', 'room-a', 'room-b', 'booth', 'mastering'];
+      filterButtons.forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if (!btn) return;
+        if (f === filter) {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white transition';
+        } else {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        }
+      });
+      renderBookingsList();
+    }
+
+    function deleteBooking(bookingId) {
+      let stored = getStoredBookings();
+      stored = stored.filter(b => b.id !== bookingId);
+      saveStoredBookings(stored);
+      renderBookingsList();
+      renderCalendar();
+      renderTimeSlots();
+      showToast('Бронирование отменено, тайм-слоты освобождены', 'info');
+    }
+
+    function renderBookingsList() {
+      const container = document.getElementById('bookings-list-container');
+      container.innerHTML = '';
+
+      let bookings = getStoredBookings();
+      if (activeFilter !== 'all') {
+        bookings = bookings.filter(b => b.roomId === activeFilter);
+      }
+
+      if (bookings.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400">
+            <i data-lucide="music" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+            <p class="text-sm font-medium">Нет активных бронирований</p>
+            <p class="text-xs text-slate-400 mt-1">Выберите зал и слоты, чтобы создать новую сессию</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      bookings.forEach(b => {
+        const room = ROOMS.find(r => r.id === b.roomId) || { name: b.roomId };
+        const eng = ENGINEERS.find(e => e.id === b.engineerId) || { name: 'Не назначен' };
+
+        const card = document.createElement('div');
+        card.className = 'bg-studio-900 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+        card.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-sm text-white">${room.name}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-purple-300 border border-slate-700">${b.slots.length} ч</span>
+              <span class="text-xs text-slate-400 font-mono">${b.date}</span>
+            </div>
+            <p class="text-xs text-slate-300">
+              <span class="font-semibold text-purple-300">${b.clientName}</span> &bull; ${b.phone} ${b.telegram ? `(${b.telegram})` : ''}
+            </p>
+            <div class="flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
+              <span>Часы: <strong class="text-slate-300">${b.slots.join(', ')}</strong></span>
+              <span>&bull; Инженер: <strong class="text-slate-300">${eng.name}</strong></span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+            <span class="text-base font-extrabold text-white">${b.totalCost.toLocaleString()} ₽</span>
+            <button onclick="deleteBooking('${b.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/40 text-rose-300 text-xs font-semibold flex items-center gap-1 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              Отменить
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function updateBookingsBadge() {
+      const count = getStoredBookings().length;
+      document.getElementById('bookings-count-badge').textContent = count;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let icon = 'info';
+      let borderColors = 'border-purple-500/80 bg-studio-800 text-purple-200';
+      if (type === 'success') {
+        icon = 'check-circle';
+        borderColors = 'border-emerald-500/80 bg-studio-800 text-emerald-200';
+      } else if (type === 'error') {
+        icon = 'alert-triangle';
+        borderColors = 'border-rose-500/80 bg-studio-800 text-rose-200';
+      }
+
+      toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 text-xs sm:text-sm font-medium ${borderColors}`;
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-4 h-4 flex-shrink-0"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      // Fade-in
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      // Auto dismiss
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Month navigation
+      document.getElementById('prev-month-btn').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+      });
+
+      document.getElementById('next-month-btn').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+      });
+
+      document.getElementById('today-btn').addEventListener('click', () => {
+        currentDate = new Date();
+        selectedDateStr = formatDateKey(new Date());
+        renderCalendar();
+        renderTimeSlots();
+      });
+
+      // Open booking modal
+      document.getElementById('book-now-btn').addEventListener('click', () => {
+        if (selectedSlots.length > 0) {
+          toggleModal('booking-modal', true);
+        }
+      });
+
+      // Initial Renders
+      renderRooms();
+      renderEngineers();
+      renderCalendar();
+      renderTimeSlots();
+      calculatePrices();
+      updateBookingsBadge();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
